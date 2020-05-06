@@ -1,26 +1,50 @@
+MattGenCans:
+	push de
+	push af
+	ld de, 0
+	; d = 3
+	; e = E8
+	; $3E8 = 1000
+.loop
+	; set can index
+	call setFirstLockTrashCanIndex
+	inc de ; increment counter
+
+	; check if d = 3
+	ld a, $ff
+	cp d
+	jr nz, .loop ; set another index if not equal
+	ld a, $ff
+	cp e
+	jr nz, .loop
+.done
+	pop af
+	pop de
+	ret
+
 VermilionCity_Script:
 	call EnableAutoTextBoxDrawing
 	ld hl, wCurrentMapScriptFlags
 	bit 6, [hl]
 	res 6, [hl]
 	push hl
-	call nz, .initCityScript
+	call nz, initCityScript
 	pop hl
 	bit 5, [hl]
 	res 5, [hl]
-	call nz, .setFirstLockTrashCanIndex
+	call nz, MattGenCans
 	ld hl, VermilionCity_ScriptPointers
 	ld a, [wVermilionCityCurScript]
 	jp CallFunctionInTable
 
-.setFirstLockTrashCanIndex
+setFirstLockTrashCanIndex:
 	call Random
 	ld a, [hRandomSub]
 	and $e
 	ld [wFirstLockTrashCanIndex], a
 	ret
 
-.initCityScript
+initCityScript:
 	CheckEventHL EVENT_SS_ANNE_LEFT
 	ret z
 	CheckEventReuseHL EVENT_WALKED_PAST_GUARD_AFTER_SS_ANNE_LEFT
