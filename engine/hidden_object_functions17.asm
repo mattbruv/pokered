@@ -334,11 +334,44 @@ GymTrashScript:
 	jr z, .openFirstLock
 
 	tx_pre_id VermilionGymTrashText
-	jr .done
+	jp .done
 
 .openFirstLock
 ; Next can is trying for the second switch.
 	SetEvent EVENT_1ST_LOCK_OPENED
+
+	; d = can 1 index
+	; e = can 2 loop counter
+	ld de, $0000
+	push de
+
+	; set initial can1 index to zero
+	push af
+	ld a, 0
+	ld [wGymTrashCanIndex], a
+	ld [wFirstLockTrashCanIndex], a
+	pop af
+
+.mattCan1Loop
+
+	; get index, and loop counter
+	pop de
+
+	; if d = 15, we have done all the cans, end
+	ld a, d
+	cp a, 15
+	jr z, .done
+
+	; check to see if loop counter = max
+	ld a, e
+	cp a, 100
+	jr z, .nextFirstCan
+
+	; increment second counter, push DE
+	inc e
+	push de
+
+.genSecondLock
 
 	ld hl, GymTrashCans
 	ld a, [wGymTrashCanIndex]
@@ -377,10 +410,29 @@ GymTrashScript:
 	add hl, de
 	ld a, [hl]
 	and $f
+	; test
+	pop de
+	ld a, e
+	push de
 	ld [wSecondLockTrashCanIndex], a
+
+	jp .mattCan1Loop
 
 	tx_pre_id VermilionGymTrashSuccessText1
 	jr .done
+
+.nextFirstCan
+	inc d ; +1 to 1st can index
+
+	push af
+	ld a, d
+	ld [wFirstLockTrashCanIndex], a
+	ld [wGymTrashCanIndex], a
+	pop af
+
+	ld e, 0 ; reset loop counter
+	push de
+	jp .mattCan1Loop
 
 .trySecondLock
 	ld a, [wSecondLockTrashCanIndex]
