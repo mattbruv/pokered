@@ -345,6 +345,10 @@ GymTrashScript:
 	ld de, $0000
 	push de
 
+	; hl = loop counter
+	ld hl, 0
+	push hl
+
 	; set initial can1 index to zero
 	push af
 	ld a, 0
@@ -354,6 +358,8 @@ GymTrashScript:
 
 .mattCan1Loop
 
+	;get hl loop counter
+	pop hl
 	; get index, and loop counter
 	pop de
 
@@ -363,13 +369,27 @@ GymTrashScript:
 	jp z, .done
 
 	; check to see if loop counter = max
-	ld a, e
-	cp a, 200
+;	ld a, e
+;	cp a, 200
+;
+;	jp z, .nextFirstCan
+
+	; compare high byte
+	ld a, h
+	cp $ff
+	jp nz, .stillLooping
+
+	; compare low
+	ld a, l
+	cp $ff
 	jp z, .nextFirstCan
 
 	; increment second counter, push DE
 	; inc e
+.stillLooping
+
 	push de
+	push hl
 
 .genSecondLock
 
@@ -411,11 +431,13 @@ GymTrashScript:
 	ld a, [hl]
 	and $f
 	; test
+	pop hl
 	pop de
-	; ld a, e
 	; add one to loop counter
-	inc e
+	inc hl
+	;inc e
 	push de
+	push hl
 	ld [wSecondLockTrashCanIndex], a
 
 	jp .mattCan1Loop
@@ -432,8 +454,10 @@ GymTrashScript:
 	ld [wGymTrashCanIndex], a
 	pop af
 
-	ld e, 0 ; reset loop counter
+	; ld e, 0 ; reset loop counter
+	inc hl
 	push de
+	push hl
 	jp .mattCan1Loop
 
 .trySecondLock
