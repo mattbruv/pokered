@@ -360,15 +360,15 @@ GymTrashScript:
 	; if d = 15, we have done all the cans, end
 	ld a, d
 	cp a, 15
-	jr z, .done
+	jp z, .done
 
 	; check to see if loop counter = max
 	ld a, e
-	cp a, 100
-	jr z, .nextFirstCan
+	cp a, 200
+	jp z, .nextFirstCan
 
 	; increment second counter, push DE
-	inc e
+	; inc e
 	push de
 
 .genSecondLock
@@ -412,7 +412,9 @@ GymTrashScript:
 	and $f
 	; test
 	pop de
-	ld a, e
+	; ld a, e
+	; add one to loop counter
+	inc e
 	push de
 	ld [wSecondLockTrashCanIndex], a
 
@@ -460,6 +462,7 @@ GymTrashScript:
 	tx_pre_id VermilionGymTrashSuccessText3
 
 .done
+	ld a, 1
 	jp PrintPredefTextID
 
 GymTrashCans:
